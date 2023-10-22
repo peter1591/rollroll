@@ -6,7 +6,7 @@
 
 static double values[6][6][6][6][6];
 
-double get_value(std::array<int, 5> dices, int all_bingo_counter)
+double calculate_value(std::array<int, 5> dices, int all_bingo_counter, int all_bingo_total)
 {
   // count[0]: how many `dices` are 0
   int count[6]{0};
@@ -21,7 +21,7 @@ double get_value(std::array<int, 5> dices, int all_bingo_counter)
     }
   }
 
-  const int points_to_all_bingo = 2000 - all_bingo_counter;
+  const int points_to_all_bingo = all_bingo_total - all_bingo_counter;
 
   // 11111
   for (int v = 0; v < 6; ++v)
@@ -268,63 +268,76 @@ double average_best()
   return total / count;
 }
 
-std::array<int, 5> input_dices() {
-    int dices;
-    std::cin >> dices;
+std::array<int, 5> input_dices()
+{
+  int dices;
+  std::cin >> dices;
 
-    std::array<int, 5> dice;
-    dice[4] = dices % 10;
-    dices = (dices - dices % 10) / 10;
-    dice[3] = dices % 10;
-    dices = (dices - dices % 10) / 10;
-    dice[2] = dices % 10;
-    dices = (dices - dices % 10) / 10;
-    dice[1] = dices % 10;
-    dices = (dices - dices % 10) / 10;
-    dice[0] = dices % 10;
+  std::array<int, 5> dice;
+  dice[4] = dices % 10;
+  dices = (dices - dices % 10) / 10;
+  dice[3] = dices % 10;
+  dices = (dices - dices % 10) / 10;
+  dice[2] = dices % 10;
+  dices = (dices - dices % 10) / 10;
+  dice[1] = dices % 10;
+  dices = (dices - dices % 10) / 10;
+  dice[0] = dices % 10;
 
-    std::cout << "got:";
-    for (int &v : dice)
+  std::cout << "got:";
+  for (int &v : dice)
+  {
+    if (v <= 0 || v > 6)
     {
-      if (v <= 0 || v > 6)
-      {
-        throw std::invalid_argument{"invalid dice value"};
-      }
-      v--; // make it 0-based
-      std::cout << " " << v;
+      throw std::invalid_argument{"invalid dice value"};
     }
-    std::cout << std::endl;
+    v--; // make it 0-based
+    std::cout << " " << v;
+  }
+  std::cout << std::endl;
 
-
-    return dice;
+  return dice;
 }
 
-int main(void)
+void calculate_values(int multipler, int all_bingo_counter, int all_bingo_total)
 {
-  std::cout << "enter current all bingo counter: ";
-  int all_bingo_counter = 0;
-  std::cin >> all_bingo_counter;
-
-  while (true)
+  for (int a = 0; a < 6; ++a)
   {
-    for (int a = 0; a < 6; ++a)
+    for (int b = 0; b < 6; ++b)
     {
-      for (int b = 0; b < 6; ++b)
+      for (int c = 0; c < 6; ++c)
       {
-        for (int c = 0; c < 6; ++c)
+        for (int d = 0; d < 6; ++d)
         {
-          for (int d = 0; d < 6; ++d)
+          for (int e = 0; e < 6; ++e)
           {
-            for (int e = 0; e < 6; ++e)
-            {
-              values[a][b][c][d][e] = get_value({a, b, c, d, e}, all_bingo_counter);
-              // std::cout << "value of " << a << b << c << d << e << ": " <<
-              // values[a][b][c][d][e] << std::endl;
-            }
+            values[a][b][c][d][e] = calculate_value({a, b, c, d, e}, all_bingo_counter, all_bingo_total) * multipler;
+            // std::cout << "value of " << a << b << c << d << e << ": " <<
+            // values[a][b][c][d][e] << std::endl;
           }
         }
       }
     }
+  }
+}
+
+int main(void)
+{
+  std::cout << "enter multipler: ";
+  int multipler = 0;
+  std::cin >> multipler;
+
+  std::cout << "enter current all bingo counter: ";
+  int all_bingo_counter = 0;
+  std::cin >> all_bingo_counter;
+
+  std::cout << "enter all_bingo_total: ";
+  int all_bingo_total = 0;
+  std::cin >> all_bingo_total;
+
+  while (true)
+  {
+    calculate_values(multipler, all_bingo_counter, all_bingo_total);
 
     std::cout << "average best: " << average_best() << std::endl;
 
@@ -336,7 +349,7 @@ int main(void)
 
     std::cout << "enter result dices: ";
     dices = input_dices();
-    const int v = (int)values[dices[0]][dices[1]][dices[2]][dices[3]][dices[4]];
+    const int v = (int)values[dices[0]][dices[1]][dices[2]][dices[3]][dices[4]] / multipler;
     std::cout << "value: " << v;
     all_bingo_counter += v;
     std::cout << " now counter: " << all_bingo_counter << std::endl;
